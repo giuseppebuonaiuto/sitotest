@@ -1,0 +1,25 @@
+{
+    "name": "grunt-seed",
+    "version": "1.0.0",
+    "authors": [
+        "Luca Pipolo <pipolo.luca@gmail.com>"
+    ],
+    "description": "This is a personal seed for inizialize grunt project with: bower, jade, sass, uglify, cssmin, imagemin, watch and livereload. Bower as the following packages: jquery.",
+    "main": "index.jade",
+    "keywords": [
+        "jquery"
+    ],
+    "license": "MIT",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "exportsOverride": {
+        "jquery": {
+            "js": "dist/jquery.min.js"
+        }
+    }
+}

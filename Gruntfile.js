@@ -1,6 +1,19 @@
 module.exports = function(grunt) {
+    require('time-grunt')(grunt);
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
+        notify: {
+            serve: {
+                options: {
+                    message: 'Server is ready!'
+                }
+            },
+            dist: {
+                options: {
+                    message: 'FTP version is ready in dist/ folder!'
+                }
+            }
+        },
         connect: {
             server: {
                 options: {
@@ -69,11 +82,11 @@ module.exports = function(grunt) {
         sass: {
             dist: {
                 options: {
-                    style: 'compressed'
+                    style: 'nested'
                 },
                 files: {
-                    'dist/css/layout/layout.min.css': 'dev/scss/layout/layout.scss',
-                    'dist/css/media-queries/media-queries.min.css': 'dev/scss/media-queries/media-queries.scss'
+                    'dist/css/layout/layout.css': 'dev/scss/layout/layout.scss',
+                    'dist/css/media-queries/media-queries.css': 'dev/scss/media-queries/media-queries.scss'
                 }
             }
         },
@@ -86,6 +99,20 @@ module.exports = function(grunt) {
                 files: {}
             }
         },
+        postcss: {
+            options: {
+                map: true,
+
+                processors: [
+                    require('autoprefixer')({
+                        browsers: 'last 2 versions'
+                    })
+                ]
+            },
+            dist: {
+                src: 'dist/css/**/*.css'
+            }
+        },
         imagemin: {
             dynamic: {
                 files: [{
@@ -96,12 +123,84 @@ module.exports = function(grunt) {
                 }]
             }
         },
+        pagespeed: {
+            options: {
+                nokey: true,
+                url: "https://developers.google.com"
+            },
+            paths: {
+                options: {
+                    paths: ["/page_speed"],
+                    locale: "it_IT",
+                    strategy: "desktop",
+                    threshold: 80
+                }
+            }
+        },
+        uncss: {
+            dist: {
+                files: [{
+                    src: 'dist/*.html',
+                    dest: 'dist/css/compiled.min.css'
+                }]
+            },
+            options: {
+                compress: true
+            }
+        },
+        processhtml: {
+            dist: {
+                files: {
+                    'dist/index.html': ['dist/index.html']
+                }
+            }
+        }
     });
 
     require('load-grunt-tasks')(grunt);
     grunt.loadNpmTasks('grunt-contrib-connect');
 
-    grunt.registerTask('default', ['bower', 'copy', 'jade', 'uglify', 'sass', 'cssmin', 'imagemin']);
-    grunt.registerTask('build', ['clean', 'bower', 'copy', 'jade', 'uglify', 'sass', 'cssmin', 'imagemin']);
-    grunt.registerTask('serve', ['connect', 'clean', 'bower', 'copy', 'jade', 'uglify', 'sass', 'watch', 'cssmin', 'imagemin']);
+    grunt.registerTask('default', [
+        'bower',
+        'copy',
+        'jade',
+        'uglify',
+        'sass',
+        'cssmin',
+        'postcss',
+        'imagemin',
+        'uncss',
+        'processhtml'
+    ]);
+    grunt.registerTask('dist', [
+        'clean',
+        'bower',
+        'copy',
+        'jade',
+        'uglify',
+        'sass',
+        'cssmin',
+        'postcss',
+        'imagemin',
+        'uncss',
+        'processhtml',
+        'pagespeed',
+        'notify:dist'
+    ]);
+    grunt.registerTask('serve', [
+        'connect',
+        'clean',
+        'bower',
+        'copy',
+        'jade',
+        'uglify',
+        'sass',
+        'cssmin',
+        'postcss',
+        'imagemin',
+        'uncss',
+        'processhtml',
+        'notify:serve',
+        'watch'
+    ]);
 };
